@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>george</groupId>
+    <artifactId>WatchService</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <javafx.version>8.0</javafx.version>
+    </properties>
+    
+    <repositories>
+        <repository>
+            <id>repo</id>
+            <url>file://${project.basedir}/lib/repo</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.6.0</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.10</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Main-Class>george.watchservice.Main</Main-Class>
+                            <implementation-version>1.0</implementation-version>
+                            <JavaFX-Application-Class>george.watchservice.Main</JavaFX-Application-Class>
+                        </manifestEntries>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- copy the properties files to the root location -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources-1</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/properties</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>properties</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <!-- define the deploy ANT task -->
+                                <taskdef name="jfxdeploy" classname="com.sun.javafx.tools.ant.DeployFXTask"
+                                         classpathref="maven.plugin.classpath" />
+
+                                <!-- define the JarSing ANT task -->
+                                <!-- taskdef name="jfxsignjar" classname="com.sun.javafx.tools.ant.FXSignJarTask" 
+                                classpathref="maven.plugin.classpath" / -->
+                                <jfxdeploy outdir="${project.build.directory}/deploy"
+                                           outfile="${build.finalName}" nativeBundles="all">
+                                    <info title="${project.name}" />
+                                    <!-- set the main class of your applcation -->
+                                    <application name="${project.name}"
+                                                 mainClass="com.myApp.MainClass" />
+                                    <resources>
+                                        <fileset dir="${project.build.directory}" includes="*.jar" />
+                                        <fileset dir="${project.build.directory}/dependency"
+                                                 includes="*.jar" />
+                                        <fileset dir="${project.build.directory}/properties" includes="*.properties"/>
+                                    </resources>
+
+                                    <!-- set your jvm args -->
+                                    <platform>
+                                        <jvmarg value="-Xms512m" />
+                                        <jvmarg value="-Xmx1024m" />
+                                    </platform>
+                                </jfxdeploy>
+                                <!-- you need to generate a key yourself -->
+                                <!--jfxsignjar destdir="${project.build.directory}/deploy" keyStore="path/to/your/keystore" 
+                                storePass="yourPass" alias="yourAlias" keyPass="keyPass"> <fileset dir="${project.build.directory}/deploy" 
+                                includes="*.jar" /> </jfxsignjar -->
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>com.oracle</groupId>
+                        <artifactId>ant-javafx</artifactId>
+                        <version>${javafx.version}</version>
+                        <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
+                        <scope>system</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+        <finalName>CashReceipts</finalName>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>8.40.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>customJar</groupId>
+            <artifactId>custom</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+</project>
