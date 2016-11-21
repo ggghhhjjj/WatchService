@@ -28,15 +28,37 @@ package george.watchservice;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+import java.util.List;
+import java.util.logging.Logger;
+import javafx.application.Platform;
+
 /**
- *
+ * A NIO watch service example.
+ * 
  * @author George Shumakov <george.shumakov@gmail.com>
  */
 public class Main extends Application {
 
+    private static Logger LOG = Logger.getLogger(Main.class.getName());
+
+    public Main() {
+        super();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
     public void start(final Stage stage) throws Exception {
-        throw new UnsupportedOperationException("JavaFX example not supported yet.");
+        final Parameters params = getParameters();
+        final List<String> parameters = params.getRaw();
+        parameters.forEach((parameter) -> {
+            LOG.info(parameter);
+        });
+        stage.close();
+        Platform.setImplicitExit(true);
+        Platform.exit();
     }
 
 }
