@@ -25,6 +25,13 @@
  */
 package george.watch.service;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -34,7 +41,7 @@ import javafx.application.Platform;
 
 /**
  * A NIO watch service example.
- * 
+ *
  * @author George Shumakov <george.shumakov@gmail.com>
  */
 public class Main extends Application {
@@ -46,17 +53,54 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args); 
+        launch(args);
     }
 
     @Override
     public void start(final Stage stage) throws Exception {
         final Parameters params = getParameters();
-        final List<String> parameters = params.getRaw();
-        parameters.forEach((parameter) -> {
-            LOG.info(parameter);
-            System.out.println("sout: " + parameter);
-        });
+        final String parameter = params.getNamed().get("folder");
+        LOG.info(parameter);
+        Path path = Paths.get(parameter);
+        WatchService watchService = null;
+        try {
+            watchService = path.getFileSystem().newWatchService();
+            path.register(watchService,
+                    StandardWatchEventKinds.ENTRY_CREATE,
+                    StandardWatchEventKinds.ENTRY_DELETE,
+                    StandardWatchEventKinds.ENTRY_MODIFY);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        final long l1 = System.currentTimeMillis();
+        do {
+            WatchKey key = null;
+            try {
+                key = watchService.take(); //wait for change
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (WatchEvent event : key.pollEvents()) {
+                switch (event.kind().name()) {
+                    case "OVERFLOW":
+                        System.out.println("We lost some events");
+                        break;
+                    case "ENTRY_CREATE":
+                        System.out.println("File " + event.context()
+                                + " is created!");
+                        break;
+                    case "ENTRY_MODIFY":
+                        System.out.println("File " + event.context()
+                                + " is modified!");
+                        break;
+                    case "ENTRY_DELETE":
+                        System.out.println("File " + event.context()
+                                + " is deleted!");
+                        break;
+                }
+            }
+            key.reset();
+        } while (System.currentTimeMillis() - l1 < 60000);
         stage.close();
         Platform.setImplicitExit(true);
         Platform.exit();
