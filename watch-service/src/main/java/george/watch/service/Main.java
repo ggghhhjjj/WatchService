@@ -76,7 +76,8 @@ public class Main extends Application {
         do {
             WatchKey key = null;
             try {
-                key = watchService.take(); //wait for change
+                key = watchService.take(); //wait for change. 
+                // Otherwise use poll() or poll(long, TimeUnit)
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
