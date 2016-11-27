@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package george.watchservice;
+package george.watch.service;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -46,7 +46,7 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args);
+        launch(args); 
     }
 
     @Override
@@ -55,6 +55,7 @@ public class Main extends Application {
         final List<String> parameters = params.getRaw();
         parameters.forEach((parameter) -> {
             LOG.info(parameter);
+            System.out.println("sout: " + parameter);
         });
         stage.close();
         Platform.setImplicitExit(true);

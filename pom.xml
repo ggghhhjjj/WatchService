@@ -3,23 +3,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>george</groupId>
-    <artifactId>WatchService</artifactId>
+    <artifactId>nio-tests</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <javafx.version>8.0</javafx.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>repo</id>
-            <url>file://${project.basedir}/lib/repo</url>
-        </repository>
-    </repositories>
-
     <build>
         <finalName>${project.artifactId}</finalName>
         <pluginManagement>
@@ -53,6 +45,11 @@
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.8</version>
                 </plugin>
+                <plugin>                
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.5.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -83,7 +80,7 @@
                         <manifestEntries>
                             <Main-Class>george.watchservice.Main</Main-Class>
                             <implementation-version>1.0</implementation-version>
-                            <JavaFX-Application-Class>george.watchservice.Main</JavaFX-Application-Class>
+                            <JavaFX-Application-Class>${main.application.class}</JavaFX-Application-Class>
                         </manifestEntries>
                         <manifest>
                             <addClasspath>true</addClasspath>
@@ -95,6 +92,39 @@
     </build>
     <profiles>
         <profile>
+            <id>MacOS-configuration</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <deploy.native.type>dmg</deploy.native.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>Windows-configuration</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <deploy.native.type>exe</deploy.native.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>Ubuntu-configuration</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <deploy.native.type>deb</deploy.native.type>
+            </properties>
+        </profile>
+        <profile>
             <id>deploy</id>
             <build>
                 <plugins>
@@ -103,16 +133,29 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>id-deploy-message</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target name="log-message">
+                                        <echo message="os type package ${deploy.native.type}"/>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>fx-deploy</id>
                                 <phase>package</phase>
                                 <configuration>
                                     <target>
                                         <taskdef name="jfxdeploy" classname="com.sun.javafx.tools.ant.DeployFXTask"
-                                                 classpathref="maven.plugin.classpath"/>
+                                                     classpathref="maven.plugin.classpath"/>
                                         <jfxdeploy outdir="${project.build.directory}/deploy"
-                                                   outfile="${build.finalName}" nativeBundles="dmg">
+                                                       outfile="${build.finalName}" nativeBundles="${deploy.native.type}">
                                             <info title="${project.name}"/>
                                             <application name="${project.name}"
-                                                         mainClass="george.watchservice.Main"/>
+                                                             mainClass="${main.application.class}"/>
                                             <resources>
                                                 <fileset dir="${project.build.directory}" includes="*.jar"/>
                                                 <!--<fileset dir="${project.build.directory}/dependency"-->
@@ -144,4 +187,7 @@
             </build>
         </profile>
     </profiles>
+    <modules>
+        <module>watch-service</module>
+    </modules>
 </project>
