@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>george</groupId>
     <artifactId>nio-tests</artifactId>
@@ -106,6 +105,10 @@
             <id>Windows-configuration</id>
             <activation>
                 <os>
+                    <!-- JavaFX native package crerator uses Inno Setup 5 as an
+                    Windows installer and it must be in the PATH before deployment
+                    Download it from http://www.jrsoftware.org/isinfo.php
+                    -->
                     <family>windows</family>
                 </os>
             </activation>
@@ -149,13 +152,10 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <target>
-                                        <taskdef name="jfxdeploy" classname="com.sun.javafx.tools.ant.DeployFXTask"
-                                                     classpathref="maven.plugin.classpath"/>
-                                        <jfxdeploy outdir="${project.build.directory}/deploy"
-                                                       outfile="${build.finalName}" nativeBundles="${deploy.native.type}">
+                                        <taskdef name="jfxdeploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpathref="maven.plugin.classpath"/>
+                                        <jfxdeploy outdir="${project.build.directory}/deploy" outfile="${build.finalName}" nativeBundles="${deploy.native.type}">
                                             <info title="${project.name}"/>
-                                            <application name="${project.name}"
-                                                             mainClass="${main.application.class}"/>
+                                            <application name="${project.name}" mainClass="${main.application.class}"/>
                                             <resources>
                                                 <fileset dir="${project.build.directory}" includes="*.jar"/>
                                                 <!--<fileset dir="${project.build.directory}/dependency"-->
@@ -189,5 +189,6 @@
     </profiles>
     <modules>
         <module>watch-service</module>
+        <module>BrickBreaker</module>
     </modules>
 </project>
